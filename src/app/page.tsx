@@ -1,22 +1,27 @@
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      {/* Header */}
-      <h1 className="text-4xl font-bold text-blue-600 mb-8">
-        Welcome to Tailwind Next.js Sample
-      </h1>
+import { fetchProducts } from "@/lib/api";
+import ProductList from "@/components/ProductList";
 
-      {/* Card */}
-      <div className="bg-white shadow-lg rounded-lg p-6 max-w-sm w-full">
-        <h2 className="text-2xl font-semibold mb-4">Card Title</h2>
-        <p className="text-gray-700 mb-6">
-          This is a simple card example using Tailwind CSS with Next.js. You can
-          customize it easily!
-        </p>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-          Click Me
-        </button>
+export default async function Home() {
+  // SSR - دریافت داده از سمت سرور
+  const data = await fetchProducts(100, 0);
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12 animate-fade-in">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            فروشگاه آنلاین
+          </h1>
+          <p className="text-gray-600 text-lg">
+            بهترین محصولات با بهترین قیمت 🛍️
+          </p>
+        </div>
+
+        <ProductList
+          initialProducts={data.products}
+          totalProducts={data.total}
+        />
       </div>
-    </div>
+    </main>
   );
 }
