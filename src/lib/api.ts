@@ -70,6 +70,35 @@ export async function fetchDoctors(
   }
 }
 
+// Fetch single doctor by ID
+export async function fetchDoctorById(id: string): Promise<Doctor | null> {
+  const url = `${API_BASE}/contracted-doctors/${id}`;
+
+  console.log("🌐 Fetching doctor by ID:", url);
+
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      console.error("❌ Error fetching doctor:", res.status);
+      return null;
+    }
+
+    const response = await res.json();
+    console.log("✅ Doctor response:", response);
+
+    return response.data.doctor;
+  } catch (error) {
+    console.error("🔥 Fetch doctor error:", error);
+    return null;
+  }
+}
+
 export async function searchDoctors(query: string): Promise<Doctor[]> {
   const response = await fetchDoctors({ search: query });
   return response.items;
