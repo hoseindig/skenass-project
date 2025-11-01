@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "فروشگاه آنلاین - Next.js 14",
-  description: "پروژه Next.js با Material Design و SSR",
+  title: "اسکناس",
+  description: "اسکناس",
 };
 
 export default function RootLayout({
