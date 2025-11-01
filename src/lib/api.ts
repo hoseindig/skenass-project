@@ -1,6 +1,5 @@
 // src/lib/api.ts
 
-// Re-export types directly
 export type { Doctor, DoctorsResponse } from "@/types/product";
 
 const API_BASE =
@@ -48,7 +47,9 @@ export async function fetchDoctors(
 
   try {
     const res = await fetch(url, {
-      cache: "no-store",
+      // برای SSR: استفاده از cache یا revalidate
+      next: { revalidate: 60 }, // cache برای 60 ثانیه
+      // یا: cache: "force-cache" برای cache دائمی
       headers: {
         Accept: "application/json",
       },
@@ -78,7 +79,7 @@ export async function fetchDoctorById(id: string): Promise<Doctor | null> {
 
   try {
     const res = await fetch(url, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: {
         Accept: "application/json",
       },

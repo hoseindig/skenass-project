@@ -1,3 +1,4 @@
+// src/components/DoctorsListClient.tsx
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -5,40 +6,60 @@ import DoctorCard from "@/components/DoctorCardNewStyle";
 import SearchFilter from "@/components/SearchFilter";
 import CreateDoctorModal from "@/components/CreateDoctorModal";
 import DoctorsListHeader from "@/components/DoctorsListHeader";
-import { Doctor } from "@/lib/api";
-import { fetchDoctors, getCategories } from "@/lib/api";
+import { Doctor, DoctorsResponse, fetchDoctors } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
-export default function DoctorsList() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+interface DoctorsListClientProps {
+  initialCategories: string[];
+  initialDoctorsData: DoctorsResponse;
+}
+
+export default function DoctorsListClient({
+  initialCategories,
+  initialDoctorsData,
+}: DoctorsListClientProps) {
+  // استفاده از initial data به جای fetch در useEffect
+  const [doctors, setDoctors] = useState<Doctor[]>(initialDoctorsData.items);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedGender, setSelectedGender] = useState("all");
-  const [categories, setCategories] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Pagination states
+  // Pagination states - از initial data
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(
+    initialDoctorsData.meta.current_page < initialDoctorsData.meta.last_page
+  );
+  const [totalPages, setTotalPages] = useState(
+    initialDoctorsData.meta.last_page
+  );
   const PER_PAGE = 20;
 
-  // Ref for intersection observer
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Initial load
-  useEffect(() => {
-    loadInitialData();
-  }, []);
+  // حذف initial load useEffect - دیگر نیازی نیست
+  // useEffect(() => {
+  //   loadDoctors(1, true);
+  // }, []);
 
   // Reset and reload when filters change
   useEffect(() => {
-    setDoctors([]);
-    setCurrentPage(1);
-    setHasMore(true);
-    loadDoctors(1, true);
+    if (searchTerm || selectedCategory !== "all" || selectedGender !== "all") {
+      setDoctors([]);
+      setCurrentPage(1);
+      setHasMore(true);
+      loadDoctors(1, true);
+    } else {
+      // برگشت به initial data
+      setDoctors(initialDoctorsData.items);
+      setCurrentPage(1);
+      setHasMore(
+        initialDoctorsData.meta.current_page < initialDoctorsData.meta.last_page
+      );
+      setTotalPages(initialDoctorsData.meta.last_page);
+    }
   }, [searchTerm, selectedCategory, selectedGender]);
 
   // Infinite scroll observer
@@ -63,19 +84,6 @@ export default function DoctorsList() {
       }
     };
   }, [hasMore, loading, loadingMore, currentPage]);
-
-  const loadInitialData = async () => {
-    try {
-      setLoading(true);
-      const cats = await getCategories();
-      setCategories(cats);
-      await loadDoctors(1, true);
-    } catch (error) {
-      console.error("Error loading initial data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadDoctors = async (page: number, isNewSearch: boolean = false) => {
     try {
@@ -149,7 +157,7 @@ export default function DoctorsList() {
         onSearch={setSearchTerm}
         onCategoryChange={setSelectedCategory}
         onGenderChange={setSelectedGender}
-        categories={categories}
+        categories={initialCategories}
       />
 
       {loading ? (
