@@ -2,14 +2,15 @@
 import { Doctor } from "@/lib/api";
 import Image from "next/image";
 import { MapPin, Star, MessageCircle, Briefcase } from "lucide-react";
+import Link from "next/link";
 
 interface DoctorCardProps {
   doctor: Doctor;
 }
 
 export default function DoctorCard({ doctor }: DoctorCardProps) {
-  const imageUrl = doctor.profile_image.startsWith('http') 
-    ? doctor.profile_image 
+  const imageUrl = doctor.profile_image.startsWith('http')
+    ? doctor.profile_image
     : `https://skenass.com${doctor.profile_image}`;
 
   return (
@@ -41,7 +42,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
           <p className="text-sm text-gray-600 mb-2">
             {doctor.profession_name}
           </p>
-          
+
           {/* Location */}
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <MapPin className="w-3.5 h-3.5" />
@@ -59,15 +60,22 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
           <Briefcase className="w-3.5 h-3.5 text-gray-400" />
           <span>{doctor.experience_years} سال تجربه</span>
         </div>
-        
+
         <div className="flex items-center gap-1">
           <MessageCircle className="w-3.5 h-3.5 text-gray-400" />
           <span>نظر</span>
         </div>
 
         <button className="text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1">
-          <span>مشاهده پروفایل</span>
-          <span>←</span>
+          {/* <span>مشاهده پروفایل</span>
+          <span>←</span> */}
+          <Link
+            href={`/doctors/${doctor.id}`}
+            className="text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
+          >
+            <span>مشاهده پروفایل</span>
+            <span>←</span>
+          </Link>
         </button>
       </div>
     </div>
