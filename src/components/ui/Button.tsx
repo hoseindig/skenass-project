@@ -18,7 +18,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           {
-            "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-md hover:shadow-lg":
+            "bg-primary-600  hover:bg-primary-700 active:bg-primary-800 shadow-md hover:shadow-lg":
               variant === "primary",
             "bg-gray-200 text-gray-800 hover:bg-gray-300 active:bg-gray-400":
               variant === "secondary",
