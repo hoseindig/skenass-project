@@ -15,7 +15,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     ? doctor.profile_image
     : `https://skenass.com${doctor.profile_image}`;
 
-  const [isFav, setIsFav] = useState(false);
+  const [isFav, setIsFav] = useState(isFavorite(doctor.id));
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
