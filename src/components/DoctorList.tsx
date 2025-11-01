@@ -1,175 +1,92 @@
-// src/components/DoctorList.tsx
 "use client";
 
+import { useState, useEffect } from "react";
+import DoctorCard from "@/components/DoctorCardNewStyle";
+import SearchFilter from "@/components/SearchFilter";
 import { Doctor } from "@/lib/api";
-import DoctorCard from "./DoctorCardNewStyle";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import SearchFilter from "./SearchFilter";
-import Pagination from "./Pagination";
-import { Loader2 } from "lucide-react";
-import Button from "./ui/Button";
 
-interface DoctorListProps {
-  initialDoctors: Doctor[];
-  totalDoctors: number;
-}
+export default function DoctorsPage() {
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("all");
+    const [selectedGender, setSelectedGender] = useState("all");
+    const [categories, setCategories] = useState<string[]>([]);
 
-export default function DoctorList({
-  initialDoctors,
-  totalDoctors,
-}: DoctorListProps) {
-  const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors || []);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProfession, setSelectedProfession] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isInfiniteScroll, setIsInfiniteScroll] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        fetchDoctors();
+    }, []);
 
-  const itemsPerPage = 12;
+    useEffect(() => {
+        filterDoctors();
+    }, [searchTerm, selectedCategory, selectedGender, doctors]);
 
-  // Extract professions
-  const professions = useMemo(() => {
-    if (!doctors || doctors.length === 0) return [];
-    const profs = new Set(doctors.map((d) => d.profession_name));
-    return Array.from(profs);
-  }, [doctors]);
+    const fetchDoctors = async () => {
+        try {
+            const res = await fetch("https://skenass.com/api/v1/contracted-doctors");
+            const response = await res.json();
+            const doctorsData = response.data.items;
 
-  // Filter doctors
-  const filteredDoctors = useMemo(() => {
-    if (!doctors || doctors.length === 0) return [];
+            setDoctors(doctorsData);
+            setFilteredDoctors(doctorsData);
 
-    return doctors.filter((doctor) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doctor.city_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (doctor.bio &&
-          doctor.bio.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesProfession =
-        selectedProfession === "all" ||
-        doctor.profession_name === selectedProfession;
-
-      return matchesSearch && matchesProfession;
-    });
-  }, [doctors, searchQuery, selectedProfession]);
-
-  // Paginate doctors
-  const totalPages = Math.ceil(filteredDoctors.length / itemsPerPage);
-  const paginatedDoctors = useMemo(() => {
-    if (isInfiniteScroll) {
-      return filteredDoctors.slice(0, currentPage * itemsPerPage);
-    }
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredDoctors.slice(start, start + itemsPerPage);
-  }, [filteredDoctors, currentPage, itemsPerPage, isInfiniteScroll]);
-
-  // Infinite scroll observer
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && !loading) {
-        if (currentPage * itemsPerPage < filteredDoctors.length) {
-          setLoading(true);
-          setTimeout(() => {
-            setCurrentPage((prev) => prev + 1);
-            setLoading(false);
-          }, 500);
+            // Extract unique categories
+            const uniqueCategories = [...new Set(doctorsData.map((d: Doctor) => d.profession_name))];
+            setCategories(uniqueCategories);
+        } catch (error) {
+            console.error("Error fetching doctors:", error);
         }
-      }
-    },
-    [loading, currentPage, filteredDoctors.length, itemsPerPage]
-  );
+    };
 
-  useEffect(() => {
-    if (!isInfiniteScroll) return;
+    const filterDoctors = () => {
+        let filtered = doctors;
 
-    const element = loadMoreRef.current;
-    if (!element) return;
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter((doctor) =>
+                doctor.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
 
-    const observer = new IntersectionObserver(handleObserver, {
-      threshold: 0.1,
-    });
+        // Filter by category
+        if (selectedCategory !== "all") {
+            filtered = filtered.filter(
+                (doctor) => doctor.profession_name === selectedCategory
+            );
+        }
 
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [handleObserver, isInfiniteScroll]);
+        // Filter by gender
+        if (selectedGender !== "all") {
+            filtered = filtered.filter(
+                (doctor) => doctor.gender === selectedGender
+            );
+        }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+        setFilteredDoctors(filtered);
+    };
 
-  if (!doctors || doctors.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">در حال بارگذاری...</p>
-      </div>
+        <div className="container mx-auto p-6" dir="rtl">
+            <h1 className="text-3xl font-bold mb-6">لیست پزشکان</h1>
+
+            <SearchFilter
+                onSearch={setSearchTerm}
+                onCategoryChange={setSelectedCategory}
+                onGenderChange={setSelectedGender}
+                categories={categories}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredDoctors.map((doctor) => (
+                    <DoctorCard key={doctor.id} doctor={doctor} />
+                ))}
+            </div>
+
+            {filteredDoctors.length === 0 && (
+                <div className="text-center text-gray-500 mt-10">
+                    هیچ پزشکی یافت نشد
+                </div>
+            )}
+        </div>
     );
-  }
-
-  return (
-    <div>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          دکترها ({filteredDoctors.length})
-        </h2>
-
-        <Button
-          variant={isInfiniteScroll ? "primary" : "outline"}
-          size="sm"
-          onClick={() => {
-            setIsInfiniteScroll(!isInfiniteScroll);
-            setCurrentPage(1);
-          }}
-        >
-          {isInfiniteScroll ? "🔄 Infinite Scroll فعال" : "📄 Pagination فعال"}
-        </Button>
-      </div>
-
-      {/* Search and Filter */}
-      <SearchFilter
-        onSearch={setSearchQuery}
-        onCategoryChange={setSelectedProfession}
-        categories={professions}
-        categoryLabel="تخصص"
-      />
-
-      {/* Doctor Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {paginatedDoctors.map((doctor) => (
-          <DoctorCard key={doctor.id} doctor={doctor} />
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredDoctors.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">دکتری یافت نشد 😔</p>
-        </div>
-      )}
-
-      {/* Pagination or Infinite Scroll */}
-      {isInfiniteScroll ? (
-        <div ref={loadMoreRef} className="flex justify-center py-8">
-          {loading && (
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          )}
-          {currentPage * itemsPerPage >= filteredDoctors.length && (
-            <p className="text-gray-500">همه دکترها نمایش داده شد ✅</p>
-          )}
-        </div>
-      ) : (
-        filteredDoctors.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )
-      )}
-    </div>
-  );
 }
