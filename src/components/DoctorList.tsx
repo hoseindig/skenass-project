@@ -2,7 +2,7 @@
 "use client";
 
 import { Doctor } from "@/lib/api";
-import DoctorCard from "./DoctorCard";
+import DoctorCard from "./DoctorCardNewStyle";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import SearchFilter from "./SearchFilter";
 import Pagination from "./Pagination";

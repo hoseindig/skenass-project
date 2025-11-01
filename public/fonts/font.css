@@ -1,0 +1,38 @@
+@font-face {
+    font-family: "new-candidate";
+    font-style: normal;
+    font-weight: normal;
+    src: url("./new-candidate/new-candidate.woff") format("woff"),
+    url("./new-candidate/new-candidate.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: 'ats-icon';
+    src:  url('./ats-icon.eot?fwqsio');
+    src:  url('./ats-icon.eot?fwqsio#iefix') format('embedded-opentype'),
+    url('./ats-icon.ttf?fwqsio') format('truetype'),
+    url('./ats-icon.woff?fwqsio') format('woff'),
+    url('./ats-icon.svg?fwqsio#ats-icon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'ats-font';
+    font-style: normal;
+    font-weight: normal;
+    src: url('./ats-font/eot/ats-font.eot');
+    src: url('./ats-font/eot/ats-font.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
+    url('./ats-font/woff2/ats-font.woff2') format('woff2'),  /* FF39+,Chrome36+, Opera24+*/
+    url('./ats-font/woff/ats-font.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+    url('./ats-font/ttf/ats-font.ttf') format('truetype');
+}
+
+
+@font-face {
+    font-family: "new-candidate";
+    font-style: normal;
+    font-weight: normal;
+    src: url("./new-candidate/new-candidate.woff") format("woff"),
+    url("./new-candidate/new-candidate.ttf") format("truetype");
+}
