@@ -2,11 +2,21 @@
 "use client";
 
 import { Doctor } from "@/lib/api";
-import { MapPin, Phone, Star, MessageCircle, Briefcase, Calendar, ChevronRight, Heart } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Star,
+  MessageCircle,
+  Briefcase,
+  Calendar,
+  ChevronRight,
+  Heart,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toggleFavorite, isFavorite } from "@/lib/favorites";
+import DoctorDetailHeader from "./DoctorDetailHeader";
 
 interface DoctorDetailProps {
   doctor: Doctor;
@@ -25,36 +35,14 @@ export default function DoctorDetail({ doctor }: DoctorDetailProps) {
     setIsFav(newState);
   };
 
-  const imageUrl = doctor.profile_image.startsWith('http')
+  const imageUrl = doctor.profile_image.startsWith("http")
     ? doctor.profile_image
     : `https://skenass.com${doctor.profile_image}`;
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-teal-600 hover:text-teal-700 text-sm font-medium"
-          >
-            <ChevronRight className="w-4 h-4" />
-            <span>لیست پزشکان</span>
-          </button>
-
-          <button
-            onClick={handleToggleFavorite}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${isFav
-                ? "bg-red-50 text-red-600 hover:bg-red-100"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-          >
-            <Heart className={`w-4 h-4 ${isFav ? "fill-red-600" : ""}`} />
-            <span>{isFav ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}</span>
-          </button>
-        </div>
-      </div>
-
+      <DoctorDetailHeader doctor={doctor} />
       <div className="max-w-7xl mx-auto p-4 space-y-4">
         {/* Main Card */}
         <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
@@ -105,7 +93,9 @@ export default function DoctorDetail({ doctor }: DoctorDetailProps) {
 
               <div className="mt-4 inline-flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-md text-sm">
                 <span className="text-gray-600">کد نظام پزشکی:</span>
-                <span className="font-bold text-gray-900">{doctor.medical_system_code}</span>
+                <span className="font-bold text-gray-900">
+                  {doctor.medical_system_code}
+                </span>
               </div>
             </div>
 
@@ -117,11 +107,15 @@ export default function DoctorDetail({ doctor }: DoctorDetailProps) {
 
         {/* About Section */}
         <div className="bg-white rounded-md border border-gray-200 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">درباره‌ی پزشک</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">
+            درباره‌ی پزشک
+          </h2>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <span className="text-gray-600 text-sm min-w-24">خدمات:</span>
-              <span className="text-gray-900 text-sm">{doctor.profession_name}</span>
+              <span className="text-gray-900 text-sm">
+                {doctor.profession_name}
+              </span>
             </div>
             {doctor.bio && (
               <div className="flex items-start gap-3">
@@ -134,7 +128,9 @@ export default function DoctorDetail({ doctor }: DoctorDetailProps) {
 
         {/* Cooperation Section */}
         <div className="bg-white rounded-md border border-gray-200 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">همکاری با اسکناس</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">
+            همکاری با اسکناس
+          </h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-gray-50 p-4 rounded-md">
               <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
@@ -150,14 +146,18 @@ export default function DoctorDetail({ doctor }: DoctorDetailProps) {
                 <Briefcase className="w-4 h-4" />
                 <span>مراجعه کننده از طریق اسکناس:</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{doctor.transaction_count}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {doctor.transaction_count}
+              </p>
             </div>
             <div className="bg-gray-50 p-4 rounded-md">
               <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
                 <Star className="w-4 h-4" />
                 <span>رضایت کاربران اسکناس:</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{doctor.average_rating || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {doctor.average_rating || 0}
+              </p>
             </div>
           </div>
         </div>
@@ -177,7 +177,9 @@ export default function DoctorDetail({ doctor }: DoctorDetailProps) {
               <Phone className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-gray-600 mb-1">شماره تماس:</p>
-                <p className="text-gray-900 font-medium" dir="ltr">{doctor.phone}</p>
+                <p className="text-gray-900 font-medium" dir="ltr">
+                  {doctor.phone}
+                </p>
               </div>
             </div>
           </div>
