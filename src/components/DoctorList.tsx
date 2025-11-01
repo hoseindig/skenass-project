@@ -4,65 +4,60 @@ import { useState, useEffect } from "react";
 import DoctorCard from "@/components/DoctorCardNewStyle";
 import SearchFilter from "@/components/SearchFilter";
 import { Doctor } from "@/lib/api";
+import { fetchDoctors, getCategories } from "@/lib/api";
 
-export default function DoctorsPage() {
+export default function DoctorsList() {
     const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
+    const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedGender, setSelectedGender] = useState("all");
     const [categories, setCategories] = useState<string[]>([]);
 
+    // Initial load - fetch categories and doctors
     useEffect(() => {
-        fetchDoctors();
+        loadInitialData();
     }, []);
 
+    // Fetch doctors when filters change
     useEffect(() => {
-        filterDoctors();
-    }, [searchTerm, selectedCategory, selectedGender, doctors]);
+        loadDoctors();
+    }, [searchTerm, selectedCategory, selectedGender]);
 
-    const fetchDoctors = async () => {
+    const loadInitialData = async () => {
         try {
-            const res = await fetch("https://skenass.com/api/v1/contracted-doctors");
-            const response = await res.json();
-            const doctorsData = response.data.items;
+            setLoading(true);
 
-            setDoctors(doctorsData);
-            setFilteredDoctors(doctorsData);
+            // Fetch categories
+            const cats = await getCategories();
+            setCategories(cats);
 
-            // Extract unique categories
-            const uniqueCategories = [...new Set(doctorsData.map((d: Doctor) => d.profession_name))];
-            setCategories(uniqueCategories);
+            // Fetch initial doctors
+            const response = await fetchDoctors();
+            setDoctors(response.items);
         } catch (error) {
-            console.error("Error fetching doctors:", error);
+            console.error("Error loading initial data:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const filterDoctors = () => {
-        let filtered = doctors;
+    const loadDoctors = async () => {
+        try {
+            setLoading(true);
 
-        // Filter by search term
-        if (searchTerm) {
-            filtered = filtered.filter((doctor) =>
-                doctor.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const response = await fetchDoctors({
+                search: searchTerm,
+                professionName: selectedCategory,
+                gender: selectedGender,
+            });
+
+            setDoctors(response.items);
+        } catch (error) {
+            console.error("Error fetching doctors:", error);
+        } finally {
+            setLoading(false);
         }
-
-        // Filter by category
-        if (selectedCategory !== "all") {
-            filtered = filtered.filter(
-                (doctor) => doctor.profession_name === selectedCategory
-            );
-        }
-
-        // Filter by gender
-        if (selectedGender !== "all") {
-            filtered = filtered.filter(
-                (doctor) => doctor.gender === selectedGender
-            );
-        }
-
-        setFilteredDoctors(filtered);
     };
 
     return (
@@ -76,16 +71,24 @@ export default function DoctorsPage() {
                 categories={categories}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredDoctors.map((doctor) => (
-                    <DoctorCard key={doctor.id} doctor={doctor} />
-                ))}
-            </div>
-
-            {filteredDoctors.length === 0 && (
+            {loading ? (
                 <div className="text-center text-gray-500 mt-10">
-                    هیچ پزشکی یافت نشد
+                    در حال بارگذاری...
                 </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {doctors.map((doctor) => (
+                            <DoctorCard key={doctor.id} doctor={doctor} />
+                        ))}
+                    </div>
+
+                    {doctors.length === 0 && (
+                        <div className="text-center text-gray-500 mt-10">
+                            هیچ پزشکی یافت نشد
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
