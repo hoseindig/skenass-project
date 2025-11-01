@@ -3,26 +3,26 @@
 import { useState, useEffect } from "react";
 import DoctorCard from "@/components/DoctorCardNewStyle";
 import SearchFilter from "@/components/SearchFilter";
+import CreateDoctorModal from "@/components/CreateDoctorModal";
 import { Doctor } from "@/lib/api";
 import { fetchDoctors, getCategories } from "@/lib/api";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, Plus } from "lucide-react";
 
 export default function DoctorsList() {
-  const [allDoctors, setAllDoctors] = useState<Doctor[]>([]); // تمام دکترها
-  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]); // دکترهای فیلتر شده
+  const [allDoctors, setAllDoctors] = useState<Doctor[]>([]);
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedGender, setSelectedGender] = useState("all");
   const [categories, setCategories] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Initial load - fetch categories and all doctors once
   useEffect(() => {
     loadInitialData();
   }, []);
 
-  // Filter doctors locally when filters change
   useEffect(() => {
     filterDoctorsLocally();
   }, [searchTerm, selectedCategory, selectedGender, allDoctors]);
@@ -30,12 +30,8 @@ export default function DoctorsList() {
   const loadInitialData = async () => {
     try {
       setLoading(true);
-
-      // Fetch categories
       const cats = await getCategories();
       setCategories(cats);
-
-      // Fetch ALL doctors without filters
       const response = await fetchDoctors();
       setAllDoctors(response.items);
     } catch (error) {
@@ -48,24 +44,21 @@ export default function DoctorsList() {
   const filterDoctorsLocally = () => {
     let filtered = [...allDoctors];
 
-    // Filter by search term
     if (searchTerm.trim()) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (doctor) =>
           doctor.full_name.toLowerCase().includes(lowerSearch) ||
-          doctor.professionName?.toLowerCase().includes(lowerSearch)
+          doctor.profession_name?.toLowerCase().includes(lowerSearch)
       );
     }
 
-    // Filter by category
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
-        (doctor) => doctor.professionName === selectedCategory
+        (doctor) => doctor.profession_name === selectedCategory
       );
     }
 
-    // Filter by gender
     if (selectedGender !== "all") {
       filtered = filtered.filter((doctor) => doctor.gender === selectedGender);
     }
@@ -73,16 +66,30 @@ export default function DoctorsList() {
     setFilteredDoctors(filtered);
   };
 
+  const handleDoctorCreated = () => {
+    // Reload doctors after creating new one
+    loadInitialData();
+  };
+
   return (
     <div className="container mx-auto p-6" dir="rtl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">لیست پزشکان</h1>
-        <Link href="/favorites">
-          <div className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors">
-            <Heart className="w-5 h-5" />
-            <span>علاقه‌مندی‌ها</span>
-          </div>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/favorites">
+            <div className="flex items-center gap-2 text-teal-600 hover:text-teal-700 transition-colors">
+              <Heart className="w-5 h-5" />
+              <span>علاقه‌مندی‌ها</span>
+            </div>
+          </Link>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>افزودن دکتر</span>
+          </button>
+        </div>
       </div>
 
       <SearchFilter
@@ -111,6 +118,12 @@ export default function DoctorsList() {
           )}
         </>
       )}
+
+      <CreateDoctorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleDoctorCreated}
+      />
     </div>
   );
 }
