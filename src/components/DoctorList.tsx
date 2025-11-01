@@ -1,27 +1,26 @@
+// src/components/DoctorList.tsx
 "use client";
 
-import { Product } from "@/types/product";
-import ProductCard from "./ProductCard";
+import { Doctor } from "@/lib/api";
+import DoctorCard from "./DoctorCard";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import SearchFilter from "./SearchFilter";
 import Pagination from "./Pagination";
 import { Loader2 } from "lucide-react";
 import Button from "./ui/Button";
 
-interface ProductListProps {
-  initialProducts: Product[];
-  totalProducts: number;
+interface DoctorListProps {
+  initialDoctors: Doctor[];
+  totalDoctors: number;
 }
 
-export default function ProductList({
-  initialProducts,
-  totalProducts,
-}: ProductListProps) {
-  console.log("🌍 API_BASE:", process.env.NEXT_PUBLIC_API_BASE_URL);
-
-  const [products, setProducts] = useState(initialProducts);
+export default function DoctorList({
+  initialDoctors,
+  totalDoctors,
+}: DoctorListProps) {
+  const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors || []);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedProfession, setSelectedProfession] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,43 +28,49 @@ export default function ProductList({
 
   const itemsPerPage = 12;
 
-  // Extract categories
-  const categories = useMemo(() => {
-    const cats = new Set(products.map((p) => p.category));
-    return Array.from(cats);
-  }, [products]);
+  // Extract professions
+  const professions = useMemo(() => {
+    if (!doctors || doctors.length === 0) return [];
+    const profs = new Set(doctors.map((d) => d.profession_name));
+    return Array.from(profs);
+  }, [doctors]);
 
-  // Filter products
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+  // Filter doctors
+  const filteredDoctors = useMemo(() => {
+    if (!doctors || doctors.length === 0) return [];
+
+    return doctors.filter((doctor) => {
       const matchesSearch =
         searchQuery === "" ||
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+        doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doctor.city_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (doctor.bio &&
+          doctor.bio.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesCategory =
-        selectedCategory === "all" || product.category === selectedCategory;
+      const matchesProfession =
+        selectedProfession === "all" ||
+        doctor.profession_name === selectedProfession;
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesProfession;
     });
-  }, [products, searchQuery, selectedCategory]);
+  }, [doctors, searchQuery, selectedProfession]);
 
-  // Paginate products
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = useMemo(() => {
+  // Paginate doctors
+  const totalPages = Math.ceil(filteredDoctors.length / itemsPerPage);
+  const paginatedDoctors = useMemo(() => {
     if (isInfiniteScroll) {
-      return filteredProducts.slice(0, currentPage * itemsPerPage);
+      return filteredDoctors.slice(0, currentPage * itemsPerPage);
     }
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(start, start + itemsPerPage);
-  }, [filteredProducts, currentPage, itemsPerPage, isInfiniteScroll]);
+    return filteredDoctors.slice(start, start + itemsPerPage);
+  }, [filteredDoctors, currentPage, itemsPerPage, isInfiniteScroll]);
 
   // Infinite scroll observer
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
       if (target.isIntersecting && !loading) {
-        if (currentPage * itemsPerPage < filteredProducts.length) {
+        if (currentPage * itemsPerPage < filteredDoctors.length) {
           setLoading(true);
           setTimeout(() => {
             setCurrentPage((prev) => prev + 1);
@@ -74,7 +79,7 @@ export default function ProductList({
         }
       }
     },
-    [loading, currentPage, filteredProducts.length]
+    [loading, currentPage, filteredDoctors.length, itemsPerPage]
   );
 
   useEffect(() => {
@@ -96,12 +101,20 @@ export default function ProductList({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  if (!doctors || doctors.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 text-lg">در حال بارگذاری...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          محصولات ({filteredProducts.length})
+          دکترها ({filteredDoctors.length})
         </h2>
 
         <Button
@@ -119,21 +132,22 @@ export default function ProductList({
       {/* Search and Filter */}
       <SearchFilter
         onSearch={setSearchQuery}
-        onCategoryChange={setSelectedCategory}
-        categories={categories}
+        onCategoryChange={setSelectedProfession}
+        categories={professions}
+        categoryLabel="تخصص"
       />
 
-      {/* Product Grid */}
+      {/* Doctor Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {paginatedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {paginatedDoctors.map((doctor) => (
+          <DoctorCard key={doctor.id} doctor={doctor} />
         ))}
       </div>
 
       {/* Empty State */}
-      {filteredProducts.length === 0 && (
+      {filteredDoctors.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">محصولی یافت نشد 😔</p>
+          <p className="text-gray-500 text-lg">دکتری یافت نشد 😔</p>
         </div>
       )}
 
@@ -143,12 +157,12 @@ export default function ProductList({
           {loading && (
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
           )}
-          {currentPage * itemsPerPage >= filteredProducts.length && (
-            <p className="text-gray-500">همه محصولات نمایش داده شد ✅</p>
+          {currentPage * itemsPerPage >= filteredDoctors.length && (
+            <p className="text-gray-500">همه دکترها نمایش داده شد ✅</p>
           )}
         </div>
       ) : (
-        filteredProducts.length > 0 && (
+        filteredDoctors.length > 0 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
