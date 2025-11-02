@@ -1,11 +1,45 @@
-// src/lib/api.ts
+// ============================================
+// ✅ فایل 6: src/lib/api.ts (بروزرسانی شده)
+// ============================================
+export interface Doctor {
+  id: number;
+  profile_image: string;
+  full_name: string;
+  profession_name: string;
+  profession_id: number;
+  city_name: string;
+  city_id: number;
+  province_name: string;
+  province_id: number;
+  comments_count: number;
+  average_rating: number;
+  medical_system_code: string;
+  phone: string;
+  bio: string | null;
+  address: string;
+  gender: "male" | "female";
+  withdraw_count: number;
+  experience_years: number;
+  partnership_months: number;
+  transaction_count: number;
+}
 
-import { Doctor, DoctorsResponse } from "@/types/product";
+export interface DoctorsMeta {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+export interface DoctorsResponse {
+  items: Doctor[];
+  meta: DoctorsMeta;
+}
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE || "https://skenass.com/api/v1";
 
-interface FetchDoctorsParams {
+export interface FetchDoctorsParams {
   page?: number;
   perPage?: number;
   search?: string;
@@ -76,27 +110,4 @@ export async function fetchDoctorById(id: string): Promise<Doctor | null> {
     console.error("🔥 Fetch doctor error:", error);
     return null;
   }
-}
-
-// ✅ راه‌حل 1: استفاده از دیتای موجود
-export function extractCategories(doctors: Doctor[]): string[] {
-  const uniqueCategories = [...new Set(doctors.map((d) => d.profession_name))];
-  return uniqueCategories.sort();
-}
-
-// ✅ راه‌حل 2: API جداگانه برای دسته‌بندی‌ها (اگر وجود دارد)
-export async function getCategories(): Promise<string[]> {
-  // اگر API جداگانه برای دسته‌بندی‌ها دارید:
-  // const url = `${API_BASE}/professions`;
-  // const res = await fetch(url);
-  // return res.json();
-
-  // در غیر این صورت از این روش استفاده کنید:
-  return [
-    "متخصص قلب",
-    "متخصص اطفال",
-    "متخصص زنان",
-    "دندانپزشک",
-    // ... سایر دسته‌بندی‌های ثابت
-  ];
 }

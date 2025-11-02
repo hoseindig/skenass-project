@@ -1,10 +1,12 @@
 // src/components/DoctorCard.tsx
+"use client";
+
 import { Doctor } from "@/lib/api";
 import Image from "next/image";
 import { MapPin, Star, MessageCircle, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { toggleFavorite, isFavorite } from "@/lib/favorites";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -15,7 +17,16 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     ? doctor.profile_image
     : `https://skenass.com${doctor.profile_image}`;
 
-  const [isFav, setIsFav] = useState(isFavorite(doctor.id));
+  // ✅ راه‌حل: ابتدا false بذار، بعد در useEffect مقدار واقعی رو بگیر
+  const [isFav, setIsFav] = useState(false);
+  const [mounted, setMounted] = useState(false); // 👈 اضافه شد
+
+  // ✅ بعد از mount، مقدار واقعی رو از localStorage بگیر
+  useEffect(() => {
+    setMounted(true);
+    setIsFav(isFavorite(doctor.id));
+  }, [doctor.id]);
+
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -46,20 +57,21 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
               unoptimized
             />
           </div>
-          <div
-            className={`absolute -top-1 -left-1 rounded-full p-1 cursor-pointer transition-colors ${
-              isFav
-                ? "bg-teal-500 hover:bg-teal-600"
-                : "bg-gray-300 hover:bg-gray-400"
-            }`}
-            onClick={handleToggleFavorite}
-          >
-            <Star
-              className={`w-3 h-3 ${
-                isFav ? "fill-white text-white" : "fill-gray-500 text-gray-500"
-              }`}
-            />
-          </div>
+          {/* ✅ فقط بعد از mount نشون بده */}
+          {mounted && (
+            <div
+              className={`absolute -top-1 -left-1 rounded-full p-1 cursor-pointer transition-colors ${isFav
+                  ? "bg-teal-500 hover:bg-teal-600"
+                  : "bg-gray-300 hover:bg-gray-400"
+                }`}
+              onClick={handleToggleFavorite}
+            >
+              <Star
+                className={`w-3 h-3 ${isFav ? "fill-white text-white" : "fill-gray-500 text-gray-500"
+                  }`}
+              />
+            </div>
+          )}
         </div>
 
         {/* Info */}
@@ -94,17 +106,13 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
           <span>نظر</span>
         </div>
 
-        <button className="text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1">
-          {/* <span>مشاهده پروفایل</span>
-          <span>←</span> */}
-          <Link
-            href={`/doctors/${doctor.id}`}
-            className="text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
-          >
-            <span>مشاهده پروفایل</span>
-            <span>←</span>
-          </Link>
-        </button>
+        <Link
+          href={`/doctors/${doctor.id}`}
+          className="text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
+        >
+          <span>مشاهده پروفایل</span>
+          <span>←</span>
+        </Link>
       </div>
     </div>
   );
