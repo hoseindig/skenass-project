@@ -1,20 +1,20 @@
 // src/app/page.tsx
 import { fetchDoctors } from "@/lib/api";
-import DoctorList from "@/components/DoctorList";
+// import DoctorList from "@/components/DoctorList";
+import HomeClient from "@/components/HomeClient";
 
 export default async function Home() {
   try {
     const doctorsData = await fetchDoctors(1, 20);
+    console.log(doctorsData);
 
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8 text-center">
           دکترهای طرف قرارداد
         </h1>
-        <DoctorList
-          initialDoctors={doctorsData.items}
-          totalDoctors={doctorsData.meta.total}
-        />
+        <HomeClient doctors={doctorsData.items
+        } />
       </div>
     );
   } catch (error) {
